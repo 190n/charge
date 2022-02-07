@@ -1,17 +1,45 @@
 #!/bin/sh
 
-LOCATE=$(which locate 2>&1)
+usage() {
+	echo "usage: $0 [-v] [-h]"
+	echo "  -v: verbose output (prints the path of each installation)"
+	echo "  -h: show this help"
+	exit 1
+}
+
+verbose=no
+
+if [ "$1" = "-h" ]; then
+	usage
+elif [ "$1" = "-v" ]; then
+	verbose=yes
+elif [ -n "$1" ]; then
+	echo "$0: unrecognized option \`$1\`"
+	usage
+fi
+
+which locate >/dev/null 2>&1
 if [ $? -ne 0 ]; then
 	echo "$0: you do not have \`locate\` installed"
 	exit 1
 fi
 
-PROTONS=$(locate -c proton_dist.tar)
-printf "proton installations:   %3d\n" $PROTONS
+protons=$(locate -0 proton_dist.tar | xargs -0 dirname)
+num_protons=$(echo "$protons" | wc -l)
+printf "proton installations:   %3d\n" $num_protons
+if [ $verbose = yes ]; then
+	echo "$protons"
+	echo
+fi
 
 # vscode has node_modules.asar instead of app.asar
 # system-wide electron installations, at least on arch, have default_app.asar, which this does count
-ELECTRONS=$(locate -c --regex '(app|node_modules)\.asar$')
-printf "electron installations: %3d\n" $ELECTRONS
+electrons=$(locate -0 --regex '(app|node_modules)\.asar$' | xargs -0 dirname)
+num_electrons=$(echo "$electrons" | wc -l)
+printf "electron installations: %3d\n" $num_electrons
+if [ $verbose = yes ]; then
+	echo "$electrons"
+	echo
+fi
 
-printf "charge:                 %3d\n" $(($PROTONS - $ELECTRONS))
+printf "charge:                 %3d\n" $(($num_protons - $num_electrons))

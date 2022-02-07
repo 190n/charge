@@ -1,0 +1,17 @@
+#!/bin/sh
+
+LOCATE=$(which locate 2>&1)
+if [ $? -ne 0 ]; then
+	echo "$0: you do not have \`locate\` installed"
+	exit 1
+fi
+
+PROTONS=$(locate -c proton_dist.tar)
+printf "proton installations:   %3d\n" $PROTONS
+
+# vscode has node_modules.asar instead of app.asar
+# system-wide electron installations, at least on arch, have default_app.asar, which this does count
+ELECTRONS=$(locate -c --regex '(app|node_modules)\.asar$')
+printf "electron installations: %3d\n" $ELECTRONS
+
+printf "charge:                 %3d\n" $(($PROTONS - $ELECTRONS))

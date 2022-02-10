@@ -24,8 +24,14 @@ if [ $? -ne 0 ]; then
 	exit 1
 fi
 
-protons=$(locate -0 proton_dist.tar | xargs -0 dirname)
-num_protons=$(echo "$protons" | wc -l)
+protons=$(locate proton_dist.tar)
+num_protons=0
+
+if [ "$protons" ]; then
+	protons=$(echo "$protons" | xargs -d'\n' dirname)
+	num_protons=$(echo "$protons" | wc -l)
+fi
+
 printf "proton installations:   %3d\n" $num_protons
 if [ $verbose = yes ]; then
 	echo "$protons"
@@ -34,8 +40,14 @@ fi
 
 # vscode has node_modules.asar instead of app.asar
 # system-wide electron installations, at least on arch, have default_app.asar, which this does count
-electrons=$(locate -0 --regex '(app|node_modules)\.asar$' | xargs -0 dirname)
-num_electrons=$(echo "$electrons" | wc -l)
+electrons=$(locate --regex '(app|node_modules)\.asar$')
+num_electrons=0
+
+if [ "$electrons" ]; then
+	electrons=$(echo "$electrons" | xargs -d'\n' dirname)
+	num_electrons=$(echo "$electrons" | wc -l)
+fi
+
 printf "electron installations: %3d\n" $num_electrons
 if [ $verbose = yes ]; then
 	echo "$electrons"
